@@ -1,0 +1,91 @@
+server:
+  port: 9008
+  servlet:
+    #指定编码集
+    encoding:
+      force: true
+      enabled: true
+      charset: utf-8
+
+spring:
+  # 服务名
+  application:
+    name: wison-oss
+  # 指定执行环境
+  profiles:
+    active: @profiles.activation@
+  cloud:
+    nacos:
+      discovery:
+        metadata:
+          # 添加元数据,防止springboot admin监听过多无用服务
+          springboot-admin: true
+  # 全局时间格式化
+  jackson:
+    date-format: yyyy-MM-dd
+    time-zone: GMT+8
+  mvc:
+    format:
+      date: yyyy-MM-dd
+  servlet:
+    multipart:
+      # 单个文件大小限制
+      max-file-size: 500MB
+      # 一次请求中所有上传文件总大小限制
+      max-request-size: 500MB
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+  endpoint:
+    health:
+      show-details: ALWAYS
+    logfile:
+      external-file: ${logging.file.path}/info.log
+
+logging:
+  level:
+    com.alibaba.nacos.client.naming: warn
+  file:
+    path: /www/server/${spring.application.name}/logs
+
+dubbo:
+  application:
+    name: ${spring.application.name}
+    id: ${spring.application.name}
+    # register-mode: instance
+  registry:
+    address: nacos://${spring.cloud.nacos.discovery.server-addr}
+    parameters:
+      namespace: ${spring.cloud.nacos.discovery.namespace}
+    use-as-config-center: false
+    use-as-metadata-center: false
+    # group: dubbo
+  protocol:
+    name: dubbo
+    port: -1
+    threadpool: cached
+    dispatcher: message
+  provider:
+    timeout: 30000
+    retries: 0
+  consumer:
+    check: false
+
+mybatis-plus:
+  # 以下配置均有默认值,可以不设置
+  global-config:
+    db-config:
+      where-strategy: not_empty # 为空则不加入条件
+      update-strategy: not_empty # 为空则不加入条件
+      insert-strategy: not_empty # 为空则不加入条件
+  configuration:
+    map-underscore-to-camel-case: false
+
+# PageHelper分页插件
+pagehelper:
+  helperDialect: mysql
+  reasonable: true
+  params: count=countSql
+
