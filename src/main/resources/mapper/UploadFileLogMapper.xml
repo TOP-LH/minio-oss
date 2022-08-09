@@ -1,33 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.wison.oss.mapper.UploadFileLogMapper">
-    <resultMap id="BaseResultMap" type="com.wison.oss.domain.UploadFileLog">
-        <!--@mbg.generated-->
-        <!--@Table upload_file_log-->
-        <id column="id" jdbcType="CHAR" property="id"/>
-        <result column="source_service" jdbcType="VARCHAR" property="sourceService"/>
-        <result column="source_key" jdbcType="VARCHAR" property="sourceKey"/>
-        <result column="login_code" jdbcType="VARCHAR" property="loginCode"/>
-        <result column="zone_code" jdbcType="VARCHAR" property="zoneCode"/>
-        <result column="zone_name" jdbcType="VARCHAR" property="zoneName"/>
-        <result column="target_category" jdbcType="VARCHAR" property="targetCategory"/>
-        <result column="dept_code" jdbcType="VARCHAR" property="deptCode"/>
-        <result column="dept_name" jdbcType="VARCHAR" property="deptName"/>
-        <result column="project_code" jdbcType="VARCHAR" property="projectCode"/>
-        <result column="project_name" jdbcType="VARCHAR" property="projectName"/>
-        <result column="custom_name" jdbcType="VARCHAR" property="customName"/>
-        <result column="file_name" jdbcType="VARCHAR" property="fileName"/>
-        <result column="file_type" jdbcType="VARCHAR" property="fileType"/>
-        <result column="first_level_folder" jdbcType="VARCHAR" property="firstLevelFolder"/>
-        <result column="second_level_folder" jdbcType="VARCHAR" property="secondLevelFolder"/>
-        <result column="remark" jdbcType="LONGVARCHAR" property="remark"/>
-        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
-        <result column="delete_flag" jdbcType="BIT" property="deleteFlag"/>
-    </resultMap>
-    <sql id="Base_Column_List">
-        <!--@mbg.generated-->
-        id, source_service, source_key, login_code, zone_code, zone_name, target_category,
-        dept_code, dept_name, project_code, project_name, custom_name, file_name, file_type,
-        first_level_folder, second_level_folder, remark, create_time, delete_flag
-    </sql>
 </mapper>

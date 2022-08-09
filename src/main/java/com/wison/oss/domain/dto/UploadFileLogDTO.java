@@ -1,5 +1,6 @@
 package com.wison.oss.domain.dto;
 
+import com.alibaba.fastjson.annotation.JSONField;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
@@ -56,7 +57,9 @@ public class UploadFileLogDTO implements Serializable {
   @ApiModelProperty("项目名称")
   private String projectName;
   /** 文件 */
-  private MultipartFile[] files;
+  @ApiModelProperty("文件")
+  @JSONField(serialize = false)
+  private MultipartFile multipartFile;
   /** 用户自定义文件名称 */
   @ApiModelProperty("用户自定义文件名称")
   private String customName;

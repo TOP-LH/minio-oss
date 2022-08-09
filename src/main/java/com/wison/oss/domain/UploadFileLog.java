@@ -71,6 +71,9 @@ public class UploadFileLog implements Serializable {
   /** 文件类型 */
   @TableField(value = "file_type")
   private String fileType;
+  /** 文件URL */
+  @TableField(value = "file_url")
+  private String fileUrl;
   /** 一级文件夹名称 */
   @TableField(value = "first_level_folder")
   private String firstLevelFolder;
