@@ -4,9 +4,9 @@
 # ./wison-oss.sh stop 停止
 # ./wison-oss.sh restart 重启
 # ./wison-oss.sh status 状态
-SERVER_NAME=wison-wpos
-APP_NAME=wpos-server.jar
-APP_HOME=/www/server/wison-wpos
+SERVER_NAME=wison-oss
+APP_NAME=oss-server.jar
+APP_HOME=/www/server/wison-oss
 LOG_PATH=$APP_HOME/logs
 JVM_OPTS="-XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=$LOG_PATH -Xms1g -Xmx1g"
 
