@@ -24,13 +24,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StopWatch;
 
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URLEncoder;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -188,7 +184,7 @@ public class UploadFileLogServiceImpl extends ServiceImpl<UploadFileLogMapper, U
   }
 
   @Override
-  public void downloadZipFile(List<String> idList, HttpServletResponse response) {
+  public void downloadZipFile(List<String> idList, String zipName, HttpServletResponse response) {
     StopWatch stopWatch = new StopWatch();
     stopWatch.start("根据ID查询文件记录");
     List<UploadFileLog> uploadFileLogList = this.listByIds(idList);
@@ -197,8 +193,12 @@ public class UploadFileLogServiceImpl extends ServiceImpl<UploadFileLogMapper, U
     }
     stopWatch.stop();
     try {
-      List<File> fileList = new ArrayList<>();
-      for (UploadFileLog item : uploadFileLogList) {
+      // 被压缩文件InputStream
+      InputStream[] inputStreams = new InputStream[uploadFileLogList.size()];
+      // 被压缩文件名称
+      String[] fileNames = new String[uploadFileLogList.size()];
+      for (int i = 0; i < uploadFileLogList.size(); i++) {
+        UploadFileLog item = uploadFileLogList.get(i);
         String objectName =
             this.getObjectName(
                 item.getSalt(),
@@ -214,22 +214,15 @@ public class UploadFileLogServiceImpl extends ServiceImpl<UploadFileLogMapper, U
         InputStream object =
             minioClient.getObject(
                 GetObjectArgs.builder().bucket(BUCKET_NAME).object(objectName).build());
-        // 创建临时文件
-        File tempFile =
-            File.createTempFile(
-                FileNameUtil.getPrefix(item.getFileName()),
-                "." + FileNameUtil.getSuffix(item.getFileName()));
-        FileOutputStream fileOutputStream = new FileOutputStream(tempFile);
-        // 转换文件流
-        byte[] bytes = new byte[1024];
-        int length;
-        while ((length = object.read(bytes)) > 0) {
-          fileOutputStream.write(bytes, 0, length);
-        }
-        fileOutputStream.close();
-        fileList.add(tempFile);
+        inputStreams[i] = object;
+        fileNames[i] = item.getFileName();
       }
-      ZipUtil.zip(response.getOutputStream(), "utf-8", false, new FileFilter(), fileList);
+      response.reset();
+      response.setHeader(
+          "Content-Disposition", "attachment;filename=" + URLEncoder.encode(zipName, "UTF-8"));
+      response.setContentType("application/octet-stream");
+      response.setCharacterEncoding("utf-8");
+      ZipUtil.zip(response.getOutputStream(), fileNames, inputStreams);
     } catch (Exception e) {
       log.error("文件下载失败, 异常信息为:{}", e.getMessage(), e);
       throw new BusinessException("文件下载失败, 请联系IT人员");

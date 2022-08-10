@@ -42,9 +42,9 @@ public class OssController {
 
   @GetMapping("download/zip/file")
   @ApiOperation("上传文件")
-  public Result uploadTarFile(String ids, HttpServletResponse response) {
+  public Result uploadTarFile(String ids, String zipName, HttpServletResponse response) {
     List<String> idList = Arrays.asList(ids.split(","));
-    uploadFileLogService.downloadZipFile(idList, response);
+    uploadFileLogService.downloadZipFile(idList, zipName, response);
   }
 
   //
