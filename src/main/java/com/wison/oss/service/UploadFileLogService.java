@@ -63,4 +63,19 @@ public interface UploadFileLogService extends IService<UploadFileLog> {
    * @param response
    */
   void downloadZipFile(List<String> idList, String zipName, HttpServletResponse response);
+
+  /**
+   * 根据ID删除
+   *
+   * @param id
+   */
+  void deleteById(String id);
+
+  /**
+   * 根据来源系统删除
+   *
+   * @param sourceService
+   * @param sourceKey
+   */
+  void deleteBySourceService(String sourceService, String sourceKey);
 }

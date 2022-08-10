@@ -2,6 +2,7 @@ package com.wison.oss.domain;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -70,5 +71,6 @@ public class UploadFileLog implements Serializable {
   /** 创建时间 */
   private Date createTime;
   /** 逻辑删除 */
+  @TableLogic(value = "true", delval = "false")
   private Boolean deleteFlag;
 }

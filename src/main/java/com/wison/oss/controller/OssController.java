@@ -7,6 +7,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -42,40 +43,15 @@ public class OssController {
 
   @GetMapping("download/zip/file")
   @ApiOperation("上传文件")
-  public Result uploadTarFile(String ids, String zipName, HttpServletResponse response) {
+  public void uploadTarFile(String ids, String zipName, HttpServletResponse response) {
     List<String> idList = Arrays.asList(ids.split(","));
     uploadFileLogService.downloadZipFile(idList, zipName, response);
   }
 
-  //
-  // @DeleteMapping("{id}")
-  // @ApiOperation("根据文件唯一ID删除")
-  // public Result deleteById(@PathVariable String id) {
-  //   return null;
-  // }
-  //
-  // @DeleteMapping("{sourceService}/{sourceKey}")
-  // @ApiOperation("根据来源系统和来源系统ID删除")
-  // public Result deleteBySourceService(
-  //     @PathVariable String sourceService, @PathVariable String sourceKey) {
-  //   return null;
-  // }
-  //
-  // @PutMapping("input/source-key")
-  // @ApiOperation("填充来源ID")
-  // public Result inputSourceKey(UploadFileLogDTO dto) {
-  //   return null;
-  // }
-  //
-  // @GetMapping("upload/file/log/list")
-  // @ApiOperation("查询附件列表")
-  // public Result selectUploadFileLogList(@ModelAttribute UploadFileLogQuery query) {
-  //   return null;
-  // }
-  //
-  // @GetMapping("upload/file/log/page/list")
-  // @ApiOperation("分页查询附件列表")
-  // public Result selectUploadFileLogPageList(@ModelAttribute UploadFileLogQuery query) {
-  //   return null;
-  // }
+  @DeleteMapping("delete")
+  @ApiOperation("根据文件唯一ID删除")
+  public Result deleteById(String id) {
+    uploadFileLogService.deleteById(id);
+    return Result.success("删除成功!");
+  }
 }

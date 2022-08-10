@@ -7,6 +7,7 @@ import cn.hutool.core.io.file.FileNameUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.ZipUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wison.base.exception.BusinessException;
 import com.wison.oss.domain.UploadFileLog;
@@ -26,6 +27,7 @@ import org.springframework.util.StopWatch;
 import javax.servlet.http.HttpServletResponse;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Date;
 import java.util.List;
@@ -135,6 +137,15 @@ public class UploadFileLogServiceImpl extends ServiceImpl<UploadFileLogMapper, U
     return objectName.toString();
   }
 
+  private static void initResponse(String fileName, HttpServletResponse response)
+      throws UnsupportedEncodingException {
+    response.reset();
+    response.setHeader(
+        "Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, "UTF-8"));
+    response.setContentType("application/octet-stream");
+    response.setCharacterEncoding("utf-8");
+  }
+
   @Override
   public void downloadFile(String id, HttpServletResponse response) {
     StopWatch stopWatch = new StopWatch();
@@ -164,12 +175,7 @@ public class UploadFileLogServiceImpl extends ServiceImpl<UploadFileLogMapper, U
               GetObjectArgs.builder().bucket(BUCKET_NAME).object(objectName).build());
       byte[] bytes = new byte[1024];
       int length;
-      response.reset();
-      response.setHeader(
-          "Content-Disposition",
-          "attachment;filename=" + URLEncoder.encode(uploadFileLog.getFileName(), "UTF-8"));
-      response.setContentType("application/octet-stream");
-      response.setCharacterEncoding("utf-8");
+      initResponse(uploadFileLog.getCustomName(), response);
       OutputStream outputStream = response.getOutputStream();
       while ((length = object.read(bytes)) > 0) {
         outputStream.write(bytes, 0, length);
@@ -215,17 +221,31 @@ public class UploadFileLogServiceImpl extends ServiceImpl<UploadFileLogMapper, U
             minioClient.getObject(
                 GetObjectArgs.builder().bucket(BUCKET_NAME).object(objectName).build());
         inputStreams[i] = object;
-        fileNames[i] = item.getFileName();
+        fileNames[i] =
+            FileNameUtil.getPrefix(item.getCustomName())
+                + "_"
+                + item.getSalt()
+                + "."
+                + FileNameUtil.getSuffix(item.getCustomName());
       }
-      response.reset();
-      response.setHeader(
-          "Content-Disposition", "attachment;filename=" + URLEncoder.encode(zipName, "UTF-8"));
-      response.setContentType("application/octet-stream");
-      response.setCharacterEncoding("utf-8");
+      initResponse(zipName + ".zip", response);
       ZipUtil.zip(response.getOutputStream(), fileNames, inputStreams);
     } catch (Exception e) {
       log.error("文件下载失败, 异常信息为:{}", e.getMessage(), e);
       throw new BusinessException("文件下载失败, 请联系IT人员");
     }
+  }
+
+  @Override
+  public void deleteById(String id) {
+    this.removeById(id);
+  }
+
+  @Override
+  public void deleteBySourceService(String sourceService, String sourceKey) {
+    this.remove(
+        new LambdaQueryWrapper<UploadFileLog>()
+            .eq(UploadFileLog::getSourceService, sourceService)
+            .eq(UploadFileLog::getSourceKey, sourceKey));
   }
 }
