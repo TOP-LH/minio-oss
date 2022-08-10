@@ -1,5 +1,6 @@
 package com.wison.oss.controller;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.wison.base.domain.Result;
 import com.wison.oss.domain.dto.UploadFileLogDTO;
 import com.wison.oss.service.UploadFileLogService;
@@ -32,6 +33,9 @@ public class OssController {
   @PostMapping("upload/file")
   @ApiOperation("上传文件")
   public Result uploadFile(UploadFileLogDTO dto) {
+    if (ObjectUtil.isEmpty(dto.getCustomName())) {
+      dto.setCustomName(dto.getMultipartFile().getOriginalFilename());
+    }
     String fileId = uploadFileLogService.uploadFile(dto);
     return Result.success("上传成功!", fileId);
   }
