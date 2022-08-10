@@ -27,4 +27,3 @@ minio:
   url: http://10.88.26.12:9000
   access-key: wison
   secret-key: wison@minio
-
