@@ -4,14 +4,17 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.file.FileNameUtil;
+import cn.hutool.core.io.unit.DataSizeUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.ZipUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wison.base.exception.BusinessException;
 import com.wison.oss.domain.UploadFileLog;
 import com.wison.oss.domain.dto.UploadFileLogDTO;
+import com.wison.oss.enums.ContentDispositionEnums;
 import com.wison.oss.enums.TargetCategoryEnums;
 import com.wison.oss.mapper.UploadFileLogMapper;
 import com.wison.oss.properties.MinioAutoProperties;
@@ -47,6 +50,57 @@ public class UploadFileLogServiceImpl extends ServiceImpl<UploadFileLogMapper, U
 
   private final MinioAutoProperties minioProperties;
   private final MinioClient minioClient;
+
+  private static void initResponse(
+      String fileName,
+      String contentType,
+      ContentDispositionEnums contentDispositionEnums,
+      HttpServletResponse response)
+      throws UnsupportedEncodingException {
+    response.reset();
+    response.setHeader(
+        "Content-Disposition",
+        StrUtil.format(
+            "{};filename={}",
+            contentDispositionEnums.getCode(),
+            URLEncoder.encode(fileName, "UTF-8")));
+    response.setContentType(contentType);
+    response.setCharacterEncoding("utf-8");
+  }
+
+  @Override
+  public String getObjectName(
+      String salt,
+      Date createTime,
+      String zoneCode,
+      String targetCategory,
+      String deptCode,
+      String projectCode,
+      String firstLevelFolder,
+      String secondLevelFolder,
+      String fileName) {
+    StringBuilder objectName = new StringBuilder();
+    objectName
+        .append(DateUtil.format(createTime, DatePattern.NORM_MONTH_PATTERN))
+        .append(PATH_SEPARATOR);
+    objectName.append(zoneCode).append(PATH_SEPARATOR);
+    if (TargetCategoryEnums.ORGANIZATION.getCode().equals(targetCategory)) {
+      objectName.append(deptCode).append(PATH_SEPARATOR);
+    } else if (TargetCategoryEnums.PROJECT.getCode().equals(targetCategory)) {
+      objectName.append(projectCode).append(PATH_SEPARATOR);
+    } else {
+      throw new BusinessException("文件类型异常");
+    }
+    objectName.append(firstLevelFolder).append(PATH_SEPARATOR);
+    objectName.append(secondLevelFolder).append(PATH_SEPARATOR);
+    objectName
+        .append(FileNameUtil.getPrefix(fileName))
+        .append("_")
+        .append(salt)
+        .append(".")
+        .append(FileNameUtil.getSuffix(fileName));
+    return objectName.toString();
+  }
 
   @Override
   public String uploadFile(UploadFileLogDTO dto) {
@@ -91,6 +145,7 @@ public class UploadFileLogServiceImpl extends ServiceImpl<UploadFileLogMapper, U
     uploadFileLog.setFileUrl(fileUrl);
     uploadFileLog.setCreateTime(createTime);
     uploadFileLog.setSalt(salt);
+    uploadFileLog.setFileSize(DataSizeUtil.format(dto.getMultipartFile().getSize()));
     // 插入信息
     this.save(uploadFileLog);
     stopWatch.stop();
@@ -98,56 +153,13 @@ public class UploadFileLogServiceImpl extends ServiceImpl<UploadFileLogMapper, U
     log.info(
         "文件上传完毕, 文件名称为:{}, 文件大小为:{}, 执行过程为:{}",
         dto.getMultipartFile().getOriginalFilename(),
-        dto.getMultipartFile().getSize(),
+        uploadFileLog.getFileSize(),
         stopWatch.prettyPrint());
     return uploadFileLog.getId();
   }
 
   @Override
-  public String getObjectName(
-      String salt,
-      Date createTime,
-      String zoneCode,
-      String targetCategory,
-      String deptCode,
-      String projectCode,
-      String firstLevelFolder,
-      String secondLevelFolder,
-      String fileName) {
-    StringBuilder objectName = new StringBuilder();
-    objectName
-        .append(DateUtil.format(createTime, DatePattern.NORM_MONTH_PATTERN))
-        .append(PATH_SEPARATOR);
-    objectName.append(zoneCode).append(PATH_SEPARATOR);
-    if (TargetCategoryEnums.ORGANIZATION.getCode().equals(targetCategory)) {
-      objectName.append(deptCode).append(PATH_SEPARATOR);
-    } else if (TargetCategoryEnums.PROJECT.getCode().equals(targetCategory)) {
-      objectName.append(projectCode).append(PATH_SEPARATOR);
-    } else {
-      throw new BusinessException("文件类型异常");
-    }
-    objectName.append(firstLevelFolder).append(PATH_SEPARATOR);
-    objectName.append(secondLevelFolder).append(PATH_SEPARATOR);
-    objectName
-        .append(FileNameUtil.getPrefix(fileName))
-        .append("_")
-        .append(salt)
-        .append(".")
-        .append(FileNameUtil.getSuffix(fileName));
-    return objectName.toString();
-  }
-
-  private static void initResponse(String fileName, HttpServletResponse response)
-      throws UnsupportedEncodingException {
-    response.reset();
-    response.setHeader(
-        "Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, "UTF-8"));
-    response.setContentType("application/octet-stream");
-    response.setCharacterEncoding("utf-8");
-  }
-
-  @Override
-  public void downloadFile(String id, HttpServletResponse response) {
+  public void downloadFile(String id, Boolean preview, HttpServletResponse response) {
     StopWatch stopWatch = new StopWatch();
     stopWatch.start("根据ID查询文件记录");
     UploadFileLog uploadFileLog = this.getById(id);
@@ -175,14 +187,30 @@ public class UploadFileLogServiceImpl extends ServiceImpl<UploadFileLogMapper, U
               GetObjectArgs.builder().bucket(BUCKET_NAME).object(objectName).build());
       byte[] bytes = new byte[1024];
       int length;
-      initResponse(uploadFileLog.getCustomName(), response);
+      if (ObjectUtil.isEmpty(preview) || Boolean.FALSE.equals(preview)) {
+        initResponse(
+            uploadFileLog.getCustomName(),
+            uploadFileLog.getFileType(),
+            ContentDispositionEnums.ATTACHMENT,
+            response);
+      } else {
+        initResponse(
+            uploadFileLog.getCustomName(),
+            uploadFileLog.getFileType(),
+            ContentDispositionEnums.INLINE,
+            response);
+      }
       OutputStream outputStream = response.getOutputStream();
       while ((length = object.read(bytes)) > 0) {
         outputStream.write(bytes, 0, length);
       }
       outputStream.close();
       stopWatch.stop();
-      log.info("文件下载成功, 文件名称为:{}, 执行过程为:{}", uploadFileLog.getFileName(), stopWatch.prettyPrint());
+      log.info(
+          "文件下载成功, 文件名称为:{}, 文件大小为:{}, 执行过程为:{}",
+          uploadFileLog.getFileName(),
+          uploadFileLog.getFileSize(),
+          stopWatch.prettyPrint());
     } catch (Exception e) {
       log.error("文件下载失败, 异常信息为:{}", e.getMessage(), e);
       throw new BusinessException("文件下载失败, 请联系IT人员");
@@ -228,7 +256,11 @@ public class UploadFileLogServiceImpl extends ServiceImpl<UploadFileLogMapper, U
                 + "."
                 + FileNameUtil.getSuffix(item.getCustomName());
       }
-      initResponse(zipName + ".zip", response);
+      initResponse(
+          zipName + ".zip",
+          "application/octet-stream",
+          ContentDispositionEnums.ATTACHMENT,
+          response);
       ZipUtil.zip(response.getOutputStream(), fileNames, inputStreams);
     } catch (Exception e) {
       log.error("文件下载失败, 异常信息为:{}", e.getMessage(), e);

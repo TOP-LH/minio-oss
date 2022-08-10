@@ -61,7 +61,7 @@ public class UploadFileLogDTO implements Serializable {
   @JSONField(serialize = false)
   private MultipartFile multipartFile;
   /** 用户自定义文件名称 */
-  @ApiModelProperty("用户自定义文件名称")
+  @ApiModelProperty("用户自定义文件名称(带文件后缀)")
   private String customName;
   /** 一级文件夹名称 */
   @ApiModelProperty("一级文件夹名称")

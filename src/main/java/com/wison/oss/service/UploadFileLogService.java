@@ -51,9 +51,10 @@ public interface UploadFileLogService extends IService<UploadFileLog> {
    * 下载文件
    *
    * @param id
+   * @param preview
    * @param response
    */
-  void downloadFile(String id, HttpServletResponse response);
+  void downloadFile(String id, Boolean preview, HttpServletResponse response);
 
   /**
    * 多文件下载zip包

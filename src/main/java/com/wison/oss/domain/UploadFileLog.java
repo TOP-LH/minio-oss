@@ -62,6 +62,8 @@ public class UploadFileLog implements Serializable {
   private String fileType;
   /** 文件URL */
   private String fileUrl;
+  /** 文件URL */
+  private String fileSize;
   /** 一级文件夹名称 */
   private String firstLevelFolder;
   /** 二级文件夹名称 */
