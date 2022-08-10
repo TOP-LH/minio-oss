@@ -1,5 +1,5 @@
 server:
-  port: 9008
+  port: 9009
   servlet:
     #指定编码集
     encoding:
