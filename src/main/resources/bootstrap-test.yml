@@ -18,7 +18,7 @@ spring:
 # 测试环境打印SQL脚本
 logging:
   level:
-    com.wison.wpos: debug
+    com.wison.oss: debug
 mybatis-plus:
   configuration:
     log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
