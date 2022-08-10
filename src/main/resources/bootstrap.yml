@@ -81,7 +81,7 @@ mybatis-plus:
       update-strategy: not_empty # 为空则不加入条件
       insert-strategy: not_empty # 为空则不加入条件
   configuration:
-    map-underscore-to-camel-case: false
+    map-underscore-to-camel-case: true
 
 # PageHelper分页插件
 pagehelper:

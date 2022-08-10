@@ -4,6 +4,10 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.wison.oss.domain.UploadFileLog;
 import com.wison.oss.domain.dto.UploadFileLogDTO;
 
+import javax.servlet.http.HttpServletResponse;
+import java.util.Date;
+import java.util.List;
+
 /**
  * @author lihao3
  * @date 2022/8/9 13:40
@@ -21,6 +25,8 @@ public interface UploadFileLogService extends IService<UploadFileLog> {
   /**
    * 获取文件路径
    *
+   * @param salt
+   * @param createTime
    * @param zoneCode
    * @param targetCategory
    * @param deptCode
@@ -31,6 +37,8 @@ public interface UploadFileLogService extends IService<UploadFileLog> {
    * @return
    */
   String getObjectName(
+      String salt,
+      Date createTime,
       String zoneCode,
       String targetCategory,
       String deptCode,
@@ -43,6 +51,15 @@ public interface UploadFileLogService extends IService<UploadFileLog> {
    * 下载文件
    *
    * @param id
+   * @param response
    */
-  void downloadFile(String id);
+  void downloadFile(String id, HttpServletResponse response);
+
+  /**
+   * 多文件下载zip包
+   *
+   * @param idList
+   * @param response
+   */
+  void downloadZipFile(List<String> idList, HttpServletResponse response);
 }

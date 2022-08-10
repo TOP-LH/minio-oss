@@ -11,6 +11,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletResponse;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * @author lihao3
  * @date 2022/8/9 13:50
@@ -32,15 +36,17 @@ public class OssController {
 
   @GetMapping("download/file")
   @ApiOperation("下载文件")
-  public void downloadFile(String id) {
-    uploadFileLogService.downloadFile(id);
+  public void downloadFile(String id, HttpServletResponse response) {
+    uploadFileLogService.downloadFile(id, response);
   }
 
-  // @GetMapping("download/tar/file")
-  // @ApiOperation("上传文件")
-  // public Result uploadTarFile(UploadFileLogDTO dto) {
-  //   return null;
-  // }
+  @GetMapping("download/zip/file")
+  @ApiOperation("上传文件")
+  public Result uploadTarFile(String ids, HttpServletResponse response) {
+    List<String> idList = Arrays.asList(ids.split(","));
+    uploadFileLogService.downloadZipFile(idList, response);
+  }
+
   //
   // @DeleteMapping("{id}")
   // @ApiOperation("根据文件唯一ID删除")
