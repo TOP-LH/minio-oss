@@ -15,6 +15,21 @@ import java.util.List;
 public interface UploadFileLogService extends IService<UploadFileLog> {
 
   /**
+   * 判断桶是否存在
+   *
+   * @param bucketName bucket名称
+   * @return true存在，false不存在
+   */
+  Boolean bucketExists(String bucketName) throws Exception;
+
+  /**
+   * 创建bucket
+   *
+   * @param bucketName bucket名称
+   */
+  void createBucket(String bucketName) throws Exception;
+
+  /**
    * 上传文件
    *
    * @param dto

@@ -19,9 +19,10 @@ import com.wison.oss.domain.dto.UploadFileLogDTO;
 import com.wison.oss.enums.ContentDispositionEnums;
 import com.wison.oss.enums.TargetCategoryEnums;
 import com.wison.oss.mapper.UploadFileLogMapper;
-import com.wison.oss.properties.MinioAutoProperties;
 import com.wison.oss.service.UploadFileLogService;
+import io.minio.BucketExistsArgs;
 import io.minio.GetObjectArgs;
+import io.minio.MakeBucketArgs;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
 import lombok.RequiredArgsConstructor;
@@ -47,10 +48,8 @@ import java.util.List;
 public class UploadFileLogServiceImpl extends ServiceImpl<UploadFileLogMapper, UploadFileLog>
     implements UploadFileLogService {
 
-  private static final String BUCKET_NAME = "wison-oss";
   private static final String PATH_SEPARATOR = "/";
 
-  private final MinioAutoProperties minioProperties;
   private final MinioClient minioClient;
 
   private static void initResponse(
@@ -71,9 +70,20 @@ public class UploadFileLogServiceImpl extends ServiceImpl<UploadFileLogMapper, U
   }
 
   @Override
+  public Boolean bucketExists(String bucketName) throws Exception {
+    return minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build());
+  }
+
+  @Override
+  public void createBucket(String bucketName) throws Exception {
+    if (!this.bucketExists(bucketName)) {
+      minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucketName).build());
+    }
+  }
+
+  @Override
   public String getObjectName(ObjectNameDTO dto) {
     StringBuilder objectName = new StringBuilder();
-    objectName.append(dto.getSourceService()).append(PATH_SEPARATOR);
     objectName.append(dto.getZoneCode()).append(PATH_SEPARATOR);
     objectName
         .append(DateUtil.format(dto.getCreatTime(), DatePattern.NORM_MONTH_PATTERN))
@@ -106,7 +116,6 @@ public class UploadFileLogServiceImpl extends ServiceImpl<UploadFileLogMapper, U
     String objectName =
         this.getObjectName(
             ObjectNameDTO.builder()
-                .sourceService(dto.getSourceService())
                 .zoneCode(dto.getZoneCode())
                 .targetCategory(dto.getTargetCategory())
                 .deptCode(dto.getDeptCode())
@@ -120,10 +129,11 @@ public class UploadFileLogServiceImpl extends ServiceImpl<UploadFileLogMapper, U
     stopWatch.stop();
     stopWatch.start("开始上传");
     try {
+      this.createBucket(dto.getSourceService());
       InputStream inputStream = dto.getMultipartFile().getInputStream();
       minioClient.putObject(
           PutObjectArgs.builder()
-              .bucket(BUCKET_NAME)
+              .bucket(dto.getSourceService())
               .contentType(dto.getMultipartFile().getContentType())
               .object(objectName)
               .stream(inputStream, dto.getMultipartFile().getSize(), -1)
@@ -135,12 +145,9 @@ public class UploadFileLogServiceImpl extends ServiceImpl<UploadFileLogMapper, U
     stopWatch.stop();
     stopWatch.start("插入记录表信息");
     // 拷贝基础属性
-    String fileUrl =
-        minioProperties.getUrl() + PATH_SEPARATOR + BUCKET_NAME + PATH_SEPARATOR + objectName;
     UploadFileLog uploadFileLog = BeanUtil.copyProperties(dto, UploadFileLog.class);
     uploadFileLog.setFileName(dto.getMultipartFile().getOriginalFilename());
     uploadFileLog.setFileType(dto.getMultipartFile().getContentType());
-    uploadFileLog.setFileUrl(fileUrl);
     uploadFileLog.setCreateTime(createTime);
     uploadFileLog.setSalt(salt);
     uploadFileLog.setFileSize(dto.getMultipartFile().getSize());
@@ -169,7 +176,6 @@ public class UploadFileLogServiceImpl extends ServiceImpl<UploadFileLogMapper, U
     String objectName =
         this.getObjectName(
             ObjectNameDTO.builder()
-                .sourceService(uploadFileLog.getSourceService())
                 .zoneCode(uploadFileLog.getZoneCode())
                 .targetCategory(uploadFileLog.getTargetCategory())
                 .deptCode(uploadFileLog.getDeptCode())
@@ -185,7 +191,10 @@ public class UploadFileLogServiceImpl extends ServiceImpl<UploadFileLogMapper, U
     try {
       InputStream object =
           minioClient.getObject(
-              GetObjectArgs.builder().bucket(BUCKET_NAME).object(objectName).build());
+              GetObjectArgs.builder()
+                  .bucket(uploadFileLog.getSourceService())
+                  .object(objectName)
+                  .build());
       byte[] bytes = new byte[1024];
       int length;
       if (ObjectUtil.isEmpty(preview) || Boolean.FALSE.equals(preview)) {
@@ -238,7 +247,6 @@ public class UploadFileLogServiceImpl extends ServiceImpl<UploadFileLogMapper, U
         String objectName =
             this.getObjectName(
                 ObjectNameDTO.builder()
-                    .sourceService(item.getSourceService())
                     .zoneCode(item.getZoneCode())
                     .targetCategory(item.getTargetCategory())
                     .deptCode(item.getDeptCode())
@@ -252,7 +260,7 @@ public class UploadFileLogServiceImpl extends ServiceImpl<UploadFileLogMapper, U
         // 获取文件
         InputStream object =
             minioClient.getObject(
-                GetObjectArgs.builder().bucket(BUCKET_NAME).object(objectName).build());
+                GetObjectArgs.builder().bucket(item.getSourceService()).object(objectName).build());
         inputStreams[i] = object;
         fileNames[i] =
             FileNameUtil.getPrefix(item.getCustomName())

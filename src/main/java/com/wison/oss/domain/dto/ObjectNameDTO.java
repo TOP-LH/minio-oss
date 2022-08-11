@@ -22,8 +22,6 @@ import java.util.Date;
 @AllArgsConstructor
 public class ObjectNameDTO {
 
-  /** 来源系统名称 */
-  private String sourceService;
   /** 板块编码 */
   private String zoneCode;
   /** 文件分类(部门文件还是项目文件) */
