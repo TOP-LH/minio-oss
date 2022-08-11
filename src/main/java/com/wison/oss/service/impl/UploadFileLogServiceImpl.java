@@ -9,10 +9,12 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.ZipUtil;
+import cn.hutool.http.ContentType;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wison.base.exception.BusinessException;
 import com.wison.oss.domain.UploadFileLog;
+import com.wison.oss.domain.dto.ObjectNameDTO;
 import com.wison.oss.domain.dto.UploadFileLogDTO;
 import com.wison.oss.enums.ContentDispositionEnums;
 import com.wison.oss.enums.TargetCategoryEnums;
@@ -69,36 +71,29 @@ public class UploadFileLogServiceImpl extends ServiceImpl<UploadFileLogMapper, U
   }
 
   @Override
-  public String getObjectName(
-      String salt,
-      Date createTime,
-      String zoneCode,
-      String targetCategory,
-      String deptCode,
-      String projectCode,
-      String firstLevelFolder,
-      String secondLevelFolder,
-      String fileName) {
+  public String getObjectName(ObjectNameDTO dto) {
     StringBuilder objectName = new StringBuilder();
+    objectName.append(dto.getSourceService()).append(PATH_SEPARATOR);
+    objectName.append(dto.getZoneCode()).append(PATH_SEPARATOR);
     objectName
-        .append(DateUtil.format(createTime, DatePattern.NORM_MONTH_PATTERN))
+        .append(DateUtil.format(dto.getCreatTime(), DatePattern.NORM_MONTH_PATTERN))
         .append(PATH_SEPARATOR);
-    objectName.append(zoneCode).append(PATH_SEPARATOR);
-    if (TargetCategoryEnums.ORGANIZATION.getCode().equals(targetCategory)) {
-      objectName.append(deptCode).append(PATH_SEPARATOR);
-    } else if (TargetCategoryEnums.PROJECT.getCode().equals(targetCategory)) {
-      objectName.append(projectCode).append(PATH_SEPARATOR);
+    objectName.append(dto.getTargetCategory()).append(PATH_SEPARATOR);
+    if (TargetCategoryEnums.ORGANIZATION.getCode().equals(dto.getTargetCategory())) {
+      objectName.append(dto.getDeptCode()).append(PATH_SEPARATOR);
+    } else if (TargetCategoryEnums.PROJECT.getCode().equals(dto.getTargetCategory())) {
+      objectName.append(dto.getProjectCode()).append(PATH_SEPARATOR);
     } else {
       throw new BusinessException("文件类型异常");
     }
-    objectName.append(firstLevelFolder).append(PATH_SEPARATOR);
-    objectName.append(secondLevelFolder).append(PATH_SEPARATOR);
+    objectName.append(dto.getFirstLevelFolder()).append(PATH_SEPARATOR);
+    objectName.append(dto.getSecondLevelFolder()).append(PATH_SEPARATOR);
     objectName
-        .append(FileNameUtil.getPrefix(fileName))
+        .append(FileNameUtil.getPrefix(dto.getFileName()))
         .append("_")
-        .append(salt)
+        .append(dto.getSalt())
         .append(".")
-        .append(FileNameUtil.getSuffix(fileName));
+        .append(FileNameUtil.getSuffix(dto.getFileName()));
     return objectName.toString();
   }
 
@@ -110,15 +105,18 @@ public class UploadFileLogServiceImpl extends ServiceImpl<UploadFileLogMapper, U
     Date createTime = new Date();
     String objectName =
         this.getObjectName(
-            salt,
-            createTime,
-            dto.getZoneCode(),
-            dto.getTargetCategory(),
-            dto.getDeptCode(),
-            dto.getProjectCode(),
-            dto.getFirstLevelFolder(),
-            dto.getSecondLevelFolder(),
-            dto.getMultipartFile().getOriginalFilename());
+            ObjectNameDTO.builder()
+                .sourceService(dto.getSourceService())
+                .zoneCode(dto.getZoneCode())
+                .targetCategory(dto.getTargetCategory())
+                .deptCode(dto.getDeptCode())
+                .projectCode(dto.getProjectCode())
+                .firstLevelFolder(dto.getFirstLevelFolder())
+                .secondLevelFolder(dto.getSecondLevelFolder())
+                .creatTime(createTime)
+                .salt(salt)
+                .fileName(dto.getMultipartFile().getOriginalFilename())
+                .build());
     stopWatch.stop();
     stopWatch.start("开始上传");
     try {
@@ -145,7 +143,7 @@ public class UploadFileLogServiceImpl extends ServiceImpl<UploadFileLogMapper, U
     uploadFileLog.setFileUrl(fileUrl);
     uploadFileLog.setCreateTime(createTime);
     uploadFileLog.setSalt(salt);
-    uploadFileLog.setFileSize(DataSizeUtil.format(dto.getMultipartFile().getSize()));
+    uploadFileLog.setFileSize(dto.getMultipartFile().getSize());
     // 插入信息
     this.save(uploadFileLog);
     stopWatch.stop();
@@ -153,7 +151,7 @@ public class UploadFileLogServiceImpl extends ServiceImpl<UploadFileLogMapper, U
     log.info(
         "文件上传完毕, 文件名称为:{}, 文件大小为:{}, 执行过程为:{}",
         dto.getMultipartFile().getOriginalFilename(),
-        uploadFileLog.getFileSize(),
+        DataSizeUtil.format(uploadFileLog.getFileSize()),
         stopWatch.prettyPrint());
     return uploadFileLog.getId();
   }
@@ -170,15 +168,18 @@ public class UploadFileLogServiceImpl extends ServiceImpl<UploadFileLogMapper, U
     stopWatch.start("组装objectName");
     String objectName =
         this.getObjectName(
-            uploadFileLog.getSalt(),
-            uploadFileLog.getCreateTime(),
-            uploadFileLog.getZoneCode(),
-            uploadFileLog.getTargetCategory(),
-            uploadFileLog.getDeptCode(),
-            uploadFileLog.getProjectCode(),
-            uploadFileLog.getFirstLevelFolder(),
-            uploadFileLog.getSecondLevelFolder(),
-            uploadFileLog.getFileName());
+            ObjectNameDTO.builder()
+                .sourceService(uploadFileLog.getSourceService())
+                .zoneCode(uploadFileLog.getZoneCode())
+                .targetCategory(uploadFileLog.getTargetCategory())
+                .deptCode(uploadFileLog.getDeptCode())
+                .projectCode(uploadFileLog.getProjectCode())
+                .firstLevelFolder(uploadFileLog.getFirstLevelFolder())
+                .secondLevelFolder(uploadFileLog.getSecondLevelFolder())
+                .creatTime(uploadFileLog.getCreateTime())
+                .salt(uploadFileLog.getSalt())
+                .fileName(uploadFileLog.getFileName())
+                .build());
     stopWatch.stop();
     stopWatch.start("下载文件");
     try {
@@ -190,7 +191,7 @@ public class UploadFileLogServiceImpl extends ServiceImpl<UploadFileLogMapper, U
       if (ObjectUtil.isEmpty(preview) || Boolean.FALSE.equals(preview)) {
         initResponse(
             uploadFileLog.getCustomName(),
-            uploadFileLog.getFileType(),
+            ContentType.OCTET_STREAM.toString(),
             ContentDispositionEnums.ATTACHMENT,
             response);
       } else {
@@ -209,7 +210,7 @@ public class UploadFileLogServiceImpl extends ServiceImpl<UploadFileLogMapper, U
       log.info(
           "文件下载成功, 文件名称为:{}, 文件大小为:{}, 执行过程为:{}",
           uploadFileLog.getFileName(),
-          uploadFileLog.getFileSize(),
+          DataSizeUtil.format(uploadFileLog.getFileSize()),
           stopWatch.prettyPrint());
     } catch (Exception e) {
       log.error("文件下载失败, 异常信息为:{}", e.getMessage(), e);
@@ -227,6 +228,7 @@ public class UploadFileLogServiceImpl extends ServiceImpl<UploadFileLogMapper, U
     }
     stopWatch.stop();
     try {
+      stopWatch.start("整理ZIP包");
       // 被压缩文件InputStream
       InputStream[] inputStreams = new InputStream[uploadFileLogList.size()];
       // 被压缩文件名称
@@ -235,15 +237,18 @@ public class UploadFileLogServiceImpl extends ServiceImpl<UploadFileLogMapper, U
         UploadFileLog item = uploadFileLogList.get(i);
         String objectName =
             this.getObjectName(
-                item.getSalt(),
-                item.getCreateTime(),
-                item.getZoneCode(),
-                item.getTargetCategory(),
-                item.getDeptCode(),
-                item.getProjectCode(),
-                item.getFirstLevelFolder(),
-                item.getSecondLevelFolder(),
-                item.getFileName());
+                ObjectNameDTO.builder()
+                    .sourceService(item.getSourceService())
+                    .zoneCode(item.getZoneCode())
+                    .targetCategory(item.getTargetCategory())
+                    .deptCode(item.getDeptCode())
+                    .projectCode(item.getProjectCode())
+                    .firstLevelFolder(item.getFirstLevelFolder())
+                    .secondLevelFolder(item.getSecondLevelFolder())
+                    .creatTime(item.getCreateTime())
+                    .salt(item.getSalt())
+                    .fileName(item.getFileName())
+                    .build());
         // 获取文件
         InputStream object =
             minioClient.getObject(
@@ -256,12 +261,15 @@ public class UploadFileLogServiceImpl extends ServiceImpl<UploadFileLogMapper, U
                 + "."
                 + FileNameUtil.getSuffix(item.getCustomName());
       }
+      stopWatch.stop();
       initResponse(
           zipName + ".zip",
-          "application/octet-stream",
+          ContentType.OCTET_STREAM.toString(),
           ContentDispositionEnums.ATTACHMENT,
           response);
+      stopWatch.start("下载ZIP包");
       ZipUtil.zip(response.getOutputStream(), fileNames, inputStreams);
+      stopWatch.stop();
     } catch (Exception e) {
       log.error("文件下载失败, 异常信息为:{}", e.getMessage(), e);
       throw new BusinessException("文件下载失败, 请联系IT人员");

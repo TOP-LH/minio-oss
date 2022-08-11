@@ -2,10 +2,10 @@ package com.wison.oss.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.wison.oss.domain.UploadFileLog;
+import com.wison.oss.domain.dto.ObjectNameDTO;
 import com.wison.oss.domain.dto.UploadFileLogDTO;
 
 import javax.servlet.http.HttpServletResponse;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -25,27 +25,10 @@ public interface UploadFileLogService extends IService<UploadFileLog> {
   /**
    * 获取文件路径
    *
-   * @param salt
-   * @param createTime
-   * @param zoneCode
-   * @param targetCategory
-   * @param deptCode
-   * @param projectCode
-   * @param firstLevelFolder
-   * @param secondLevelFolder
-   * @param fileName
+   * @param dto
    * @return
    */
-  String getObjectName(
-      String salt,
-      Date createTime,
-      String zoneCode,
-      String targetCategory,
-      String deptCode,
-      String projectCode,
-      String firstLevelFolder,
-      String secondLevelFolder,
-      String fileName);
+  String getObjectName(ObjectNameDTO dto);
 
   /**
    * 下载文件
