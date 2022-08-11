@@ -33,6 +33,7 @@ public class MinioConfig {
         minioAutoProperties.getConnectTimeout().toMillis(),
         minioAutoProperties.getWriteTimeout().toMillis(),
         minioAutoProperties.getReadTimeout().toMillis());
+    log.info("MinioClient初始化成功!");
     return minioClient;
   }
 }
