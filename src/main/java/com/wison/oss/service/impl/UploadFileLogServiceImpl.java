@@ -3,6 +3,7 @@ package com.wison.oss.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.io.file.FileNameUtil;
 import cn.hutool.core.io.unit.DataSizeUtil;
 import cn.hutool.core.util.ObjectUtil;
@@ -30,9 +31,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StopWatch;
 
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Date;
@@ -266,10 +267,8 @@ public class UploadFileLogServiceImpl extends ServiceImpl<UploadFileLogMapper, U
             ContentDispositionEnums.INLINE,
             response);
       }
-      OutputStream outputStream = response.getOutputStream();
-      while ((length = object.read(bytes)) > 0) {
-        outputStream.write(bytes, 0, length);
-      }
+      ServletOutputStream outputStream = response.getOutputStream();
+      IoUtil.copy(object, response.getOutputStream());
       outputStream.close();
       stopWatch.stop();
       log.info(
