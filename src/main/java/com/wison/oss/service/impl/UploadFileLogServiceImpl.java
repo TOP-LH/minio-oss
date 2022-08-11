@@ -253,7 +253,7 @@ public class UploadFileLogServiceImpl extends ServiceImpl<UploadFileLogMapper, U
                   .build());
       byte[] bytes = new byte[1024];
       int length;
-      if (ObjectUtil.isEmpty(preview) || Boolean.FALSE.equals(preview)) {
+      if (Boolean.FALSE.equals(preview)) {
         initResponse(
             uploadFileLog.getCustomName(),
             ContentType.OCTET_STREAM.toString(),
