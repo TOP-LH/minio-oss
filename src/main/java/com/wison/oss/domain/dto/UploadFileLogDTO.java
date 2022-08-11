@@ -10,6 +10,8 @@ import lombok.Setter;
 import lombok.ToString;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 /**
@@ -27,21 +29,26 @@ import java.io.Serializable;
 public class UploadFileLogDTO implements Serializable {
 
   /** 来源系统名称 */
+  @NotEmpty(message = "来源系统名称不可为空!")
   @ApiModelProperty("来源系统名称")
   private String sourceService;
   /** 来源系统ID */
   @ApiModelProperty("来源系统ID")
   private String sourceKey;
   /** 创建人登录名 */
+  @NotEmpty(message = "创建人登录名不可为空!")
   @ApiModelProperty("创建人登录名")
   private String loginCode;
   /** 板块编码 */
+  @NotEmpty(message = "板块编码不可为空!")
   @ApiModelProperty("板块编码")
   private String zoneCode;
   /** 板块名称 */
+  @NotEmpty(message = "板块名称不可为空!")
   @ApiModelProperty("板块名称")
   private String zoneName;
   /** 文件分类(部门文件还是项目文件) */
+  @NotEmpty(message = "文件分类不可为空!")
   @ApiModelProperty("文件分类(部门文件还是项目文件)")
   private String targetCategory;
   /** 部门编码 */
@@ -57,6 +64,7 @@ public class UploadFileLogDTO implements Serializable {
   @ApiModelProperty("项目名称")
   private String projectName;
   /** 文件 */
+  @NotNull(message = "文件不可为空!")
   @ApiModelProperty("文件")
   @JSONField(serialize = false)
   private MultipartFile multipartFile;
@@ -64,9 +72,11 @@ public class UploadFileLogDTO implements Serializable {
   @ApiModelProperty("用户自定义文件名称(带文件后缀)")
   private String customName;
   /** 一级文件夹名称 */
+  @NotNull(message = "一级文件夹名称不可为空!")
   @ApiModelProperty("一级文件夹名称")
   private String firstLevelFolder;
   /** 二级文件夹名称 */
+  @NotNull(message = "二级文件夹名称不可为空!")
   @ApiModelProperty("二级文件夹名称")
   private String secondLevelFolder;
   /** 备注 */
