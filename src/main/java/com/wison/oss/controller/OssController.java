@@ -44,7 +44,7 @@ public class OssController {
   }
 
   @PostMapping("async/upload/file")
-  @ApiOperation("上传文件")
+  @ApiOperation("异步上传文件")
   public Result asyncUploadFile(UploadFileLogDTO dto) {
     if (ObjectUtil.isEmpty(dto.getCustomName())) {
       dto.setCustomName(dto.getMultipartFile().getOriginalFilename());
