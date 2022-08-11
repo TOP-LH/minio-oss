@@ -37,6 +37,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * @author lihao3
@@ -67,6 +68,18 @@ public class UploadFileLogServiceImpl extends ServiceImpl<UploadFileLogMapper, U
             URLEncoder.encode(fileName, "UTF-8")));
     response.setContentType(contentType);
     response.setCharacterEncoding("utf-8");
+  }
+
+  private void putObject(UploadFileLogDTO dto, String objectName) throws Exception {
+    this.createBucket(dto.getSourceService());
+    InputStream inputStream = dto.getMultipartFile().getInputStream();
+    minioClient.putObject(
+        PutObjectArgs.builder()
+            .bucket(dto.getSourceService())
+            .contentType(dto.getMultipartFile().getContentType())
+            .object(objectName)
+            .stream(inputStream, dto.getMultipartFile().getSize(), -1)
+            .build());
   }
 
   @Override
@@ -129,19 +142,62 @@ public class UploadFileLogServiceImpl extends ServiceImpl<UploadFileLogMapper, U
     stopWatch.stop();
     stopWatch.start("开始上传");
     try {
-      this.createBucket(dto.getSourceService());
-      InputStream inputStream = dto.getMultipartFile().getInputStream();
-      minioClient.putObject(
-          PutObjectArgs.builder()
-              .bucket(dto.getSourceService())
-              .contentType(dto.getMultipartFile().getContentType())
-              .object(objectName)
-              .stream(inputStream, dto.getMultipartFile().getSize(), -1)
-              .build());
+      this.putObject(dto, objectName);
     } catch (Exception e) {
       log.error("文件上传失败, 异常信息为:{}", e.getMessage(), e);
       throw new BusinessException("文件上传失败, 请联系IT人员");
     }
+    stopWatch.stop();
+    stopWatch.start("插入记录表信息");
+    // 拷贝基础属性
+    UploadFileLog uploadFileLog = BeanUtil.copyProperties(dto, UploadFileLog.class);
+    uploadFileLog.setFileName(dto.getMultipartFile().getOriginalFilename());
+    uploadFileLog.setFileType(dto.getMultipartFile().getContentType());
+    uploadFileLog.setCreateTime(createTime);
+    uploadFileLog.setSalt(salt);
+    uploadFileLog.setFileSize(dto.getMultipartFile().getSize());
+    // 插入信息
+    this.save(uploadFileLog);
+    stopWatch.stop();
+    // 返回附件ID
+    log.info(
+        "文件上传完毕, 文件名称为:{}, 文件大小为:{}, 执行过程为:{}",
+        dto.getMultipartFile().getOriginalFilename(),
+        DataSizeUtil.format(uploadFileLog.getFileSize()),
+        stopWatch.prettyPrint());
+    return uploadFileLog.getId();
+  }
+
+  @Override
+  public String asyncUploadFile(UploadFileLogDTO dto) {
+    StopWatch stopWatch = new StopWatch();
+    stopWatch.start("组装文件路径");
+    String salt = RandomUtil.randomString(5);
+    Date createTime = new Date();
+    String objectName =
+        this.getObjectName(
+            ObjectNameDTO.builder()
+                .zoneCode(dto.getZoneCode())
+                .targetCategory(dto.getTargetCategory())
+                .deptCode(dto.getDeptCode())
+                .projectCode(dto.getProjectCode())
+                .firstLevelFolder(dto.getFirstLevelFolder())
+                .secondLevelFolder(dto.getSecondLevelFolder())
+                .creatTime(createTime)
+                .salt(salt)
+                .fileName(dto.getMultipartFile().getOriginalFilename())
+                .build());
+    stopWatch.stop();
+    stopWatch.start("开始上传");
+    CompletableFuture.runAsync(
+        () -> {
+          try {
+            this.putObject(dto, objectName);
+          } catch (Exception e) {
+            log.error("文件上传失败, 异常信息为:{}", e.getMessage(), e);
+            throw new BusinessException("文件上传失败, 请联系IT人员");
+          }
+        });
     stopWatch.stop();
     stopWatch.start("插入记录表信息");
     // 拷贝基础属性

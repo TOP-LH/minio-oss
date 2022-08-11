@@ -40,6 +40,16 @@ public class OssController {
     return Result.success("上传成功!", fileId);
   }
 
+  @PostMapping("async/upload/file")
+  @ApiOperation("上传文件")
+  public Result asyncUploadFile(UploadFileLogDTO dto) {
+    if (ObjectUtil.isEmpty(dto.getCustomName())) {
+      dto.setCustomName(dto.getMultipartFile().getOriginalFilename());
+    }
+    String fileId = uploadFileLogService.asyncUploadFile(dto);
+    return Result.success("上传成功!", fileId);
+  }
+
   @GetMapping("download/file")
   @ApiOperation("下载文件")
   public void downloadFile(

@@ -38,6 +38,14 @@ public interface UploadFileLogService extends IService<UploadFileLog> {
   String uploadFile(UploadFileLogDTO dto);
 
   /**
+   * 异步上传文件
+   *
+   * @param dto
+   * @return
+   */
+  String asyncUploadFile(UploadFileLogDTO dto);
+
+  /**
    * 获取文件路径
    *
    * @param dto
