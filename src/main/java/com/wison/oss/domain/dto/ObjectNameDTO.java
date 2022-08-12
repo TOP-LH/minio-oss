@@ -9,9 +9,6 @@ import lombok.ToString;
 import java.util.Date;
 
 /**
- * objectName=sourceService/YYYY-MM/targetCategory/deptCode OR
- * projectCode/firstLevelFolder/secondLevelFolder/fileName_salt
- *
  * @author lihao3
  * @date 2022/8/11 9:18
  */
