@@ -1,0 +1,16 @@
+#spring
+spring:
+  cloud:
+    nacos:
+      discovery:
+        # 注册中心地址
+        server-addr: 10.99.10.155:8848
+        # 命名空间
+        namespace: 7159aac1-0dba-4fc7-81ee-794f0ca9a7e0
+      config:
+        # 配置中心地址
+        server-addr: 10.99.10.155:8848
+        # 配置文件格式
+        file-extension: yaml
+        # 命名空间
+        namespace: 7159aac1-0dba-4fc7-81ee-794f0ca9a7e0

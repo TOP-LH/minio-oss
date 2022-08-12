@@ -50,34 +50,11 @@ logging:
   file:
     path: /www/server/${spring.application.name}/logs
 
-dubbo:
-  application:
-    name: ${spring.application.name}
-    id: ${spring.application.name}
-    # register-mode: instance
-  registry:
-    address: nacos://${spring.cloud.nacos.discovery.server-addr}
-    parameters:
-      namespace: ${spring.cloud.nacos.discovery.namespace}
-    use-as-config-center: false
-    use-as-metadata-center: false
-    # group: dubbo
-  protocol:
-    name: dubbo
-    port: -1
-    threadpool: cached
-    dispatcher: message
-  provider:
-    timeout: 30000
-    retries: 0
-  consumer:
-    check: false
-
 mybatis-plus:
   # 以下配置均有默认值,可以不设置
   global-config:
     db-config:
-      where-strategy: not_empty # 为空则不加入条件
+      select-strategy: not_empty # 为空则不加入条件
       update-strategy: not_empty # 为空则不加入条件
       insert-strategy: not_empty # 为空则不加入条件
   configuration:

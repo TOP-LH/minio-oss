@@ -103,9 +103,9 @@ public class UploadFileLogServiceImpl extends ServiceImpl<UploadFileLogMapper, U
         .append(DateUtil.format(dto.getCreatTime(), DatePattern.NORM_MONTH_PATTERN))
         .append(PATH_SEPARATOR);
     objectName.append(dto.getTargetCategory()).append(PATH_SEPARATOR);
-    if (TargetCategoryEnums.ORGANIZATION.getCode().equals(dto.getTargetCategory())) {
+    if (TargetCategoryEnums.ORGANIZATION.getCode().equalsIgnoreCase(dto.getTargetCategory())) {
       objectName.append(dto.getDeptCode()).append(PATH_SEPARATOR);
-    } else if (TargetCategoryEnums.PROJECT.getCode().equals(dto.getTargetCategory())) {
+    } else if (TargetCategoryEnums.PROJECT.getCode().equalsIgnoreCase(dto.getTargetCategory())) {
       objectName.append(dto.getProjectCode()).append(PATH_SEPARATOR);
     } else {
       throw new BusinessException("文件类型异常");
@@ -252,8 +252,6 @@ public class UploadFileLogServiceImpl extends ServiceImpl<UploadFileLogMapper, U
                   .bucket(uploadFileLog.getSourceService())
                   .object(objectName)
                   .build());
-      byte[] bytes = new byte[1024];
-      int length;
       if (Boolean.FALSE.equals(preview)) {
         initResponse(
             uploadFileLog.getCustomName(),
