@@ -37,7 +37,7 @@ public class OssController {
   @ApiOperation("上传文件")
   public Result uploadFile(UploadFileLogDTO dto) {
     if (ObjectUtil.isEmpty(dto.getCustomName())) {
-      dto.setCustomName(dto.getMultipartFile().getOriginalFilename());
+      dto.setCustomName(dto.getFile().getOriginalFilename());
     }
     String fileId = uploadFileLogService.uploadFile(dto);
     return Result.success("上传成功!", fileId);
@@ -47,7 +47,7 @@ public class OssController {
   @ApiOperation("异步上传文件")
   public Result asyncUploadFile(UploadFileLogDTO dto) {
     if (ObjectUtil.isEmpty(dto.getCustomName())) {
-      dto.setCustomName(dto.getMultipartFile().getOriginalFilename());
+      dto.setCustomName(dto.getFile().getOriginalFilename());
     }
     String fileId = uploadFileLogService.asyncUploadFile(dto);
     return Result.success("上传成功!", fileId);

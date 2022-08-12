@@ -67,7 +67,7 @@ public class UploadFileLogDTO implements Serializable {
   @NotNull(message = "文件不可为空!")
   @ApiModelProperty("文件")
   @JSONField(serialize = false)
-  private MultipartFile multipartFile;
+  private MultipartFile file;
   /** 用户自定义文件名称 */
   @ApiModelProperty("用户自定义文件名称(带文件后缀)")
   private String customName;

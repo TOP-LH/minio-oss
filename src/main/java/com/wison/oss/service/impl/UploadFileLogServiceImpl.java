@@ -73,13 +73,13 @@ public class UploadFileLogServiceImpl extends ServiceImpl<UploadFileLogMapper, U
 
   private void putObject(UploadFileLogDTO dto, String objectName) throws Exception {
     this.createBucket(dto.getSourceService());
-    InputStream inputStream = dto.getMultipartFile().getInputStream();
+    InputStream inputStream = dto.getFile().getInputStream();
     minioClient.putObject(
         PutObjectArgs.builder()
             .bucket(dto.getSourceService())
-            .contentType(dto.getMultipartFile().getContentType())
+            .contentType(dto.getFile().getContentType())
             .object(objectName)
-            .stream(inputStream, dto.getMultipartFile().getSize(), -1)
+            .stream(inputStream, dto.getFile().getSize(), -1)
             .build());
   }
 
@@ -138,7 +138,7 @@ public class UploadFileLogServiceImpl extends ServiceImpl<UploadFileLogMapper, U
                 .secondLevelFolder(dto.getSecondLevelFolder())
                 .creatTime(createTime)
                 .salt(salt)
-                .fileName(dto.getMultipartFile().getOriginalFilename())
+                .fileName(dto.getFile().getOriginalFilename())
                 .build());
     stopWatch.stop();
     stopWatch.start("开始上传");
@@ -152,18 +152,18 @@ public class UploadFileLogServiceImpl extends ServiceImpl<UploadFileLogMapper, U
     stopWatch.start("插入记录表信息");
     // 拷贝基础属性
     UploadFileLog uploadFileLog = BeanUtil.copyProperties(dto, UploadFileLog.class);
-    uploadFileLog.setFileName(dto.getMultipartFile().getOriginalFilename());
-    uploadFileLog.setFileType(dto.getMultipartFile().getContentType());
+    uploadFileLog.setFileName(dto.getFile().getOriginalFilename());
+    uploadFileLog.setFileType(dto.getFile().getContentType());
     uploadFileLog.setCreateTime(createTime);
     uploadFileLog.setSalt(salt);
-    uploadFileLog.setFileSize(dto.getMultipartFile().getSize());
+    uploadFileLog.setFileSize(dto.getFile().getSize());
     // 插入信息
     this.save(uploadFileLog);
     stopWatch.stop();
     // 返回附件ID
     log.info(
         "文件上传完毕, 文件名称为:{}, 文件大小为:{}, 执行过程为:{}",
-        dto.getMultipartFile().getOriginalFilename(),
+        dto.getFile().getOriginalFilename(),
         DataSizeUtil.format(uploadFileLog.getFileSize()),
         stopWatch.prettyPrint());
     return uploadFileLog.getId();
@@ -186,7 +186,7 @@ public class UploadFileLogServiceImpl extends ServiceImpl<UploadFileLogMapper, U
                 .secondLevelFolder(dto.getSecondLevelFolder())
                 .creatTime(createTime)
                 .salt(salt)
-                .fileName(dto.getMultipartFile().getOriginalFilename())
+                .fileName(dto.getFile().getOriginalFilename())
                 .build());
     stopWatch.stop();
     stopWatch.start("开始上传");
@@ -203,18 +203,18 @@ public class UploadFileLogServiceImpl extends ServiceImpl<UploadFileLogMapper, U
     stopWatch.start("插入记录表信息");
     // 拷贝基础属性
     UploadFileLog uploadFileLog = BeanUtil.copyProperties(dto, UploadFileLog.class);
-    uploadFileLog.setFileName(dto.getMultipartFile().getOriginalFilename());
-    uploadFileLog.setFileType(dto.getMultipartFile().getContentType());
+    uploadFileLog.setFileName(dto.getFile().getOriginalFilename());
+    uploadFileLog.setFileType(dto.getFile().getContentType());
     uploadFileLog.setCreateTime(createTime);
     uploadFileLog.setSalt(salt);
-    uploadFileLog.setFileSize(dto.getMultipartFile().getSize());
+    uploadFileLog.setFileSize(dto.getFile().getSize());
     // 插入信息
     this.save(uploadFileLog);
     stopWatch.stop();
     // 返回附件ID
     log.info(
         "文件上传完毕, 文件名称为:{}, 文件大小为:{}, 执行过程为:{}",
-        dto.getMultipartFile().getOriginalFilename(),
+        dto.getFile().getOriginalFilename(),
         DataSizeUtil.format(uploadFileLog.getFileSize()),
         stopWatch.prettyPrint());
     return uploadFileLog.getId();
