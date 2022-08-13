@@ -35,7 +35,7 @@ public class OssController {
 
   @PostMapping("upload/file")
   @ApiOperation("上传文件")
-  public Result uploadFile(UploadFileLogDTO dto) {
+  public Result uploadFile(@Validated UploadFileLogDTO dto) {
     if (ObjectUtil.isEmpty(dto.getCustomName())) {
       dto.setCustomName(dto.getFile().getOriginalFilename());
     }
@@ -45,7 +45,7 @@ public class OssController {
 
   @PostMapping("async/upload/file")
   @ApiOperation("异步上传文件")
-  public Result asyncUploadFile(UploadFileLogDTO dto) {
+  public Result asyncUploadFile(@Validated UploadFileLogDTO dto) {
     if (ObjectUtil.isEmpty(dto.getCustomName())) {
       dto.setCustomName(dto.getFile().getOriginalFilename());
     }
