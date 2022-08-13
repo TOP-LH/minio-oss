@@ -72,6 +72,15 @@ public class UploadFileLogServiceImpl extends ServiceImpl<UploadFileLogMapper, U
   }
 
   private void putObject(UploadFileLogDTO dto, String objectName) throws Exception {
+    if (TargetCategoryEnums.ORGANIZATION.getCode().equalsIgnoreCase(dto.getTargetCategory())) {
+      if (ObjectUtil.isEmpty(dto.getDeptCode()) || ObjectUtil.isEmpty(dto.getDeptCode())) {
+        throw new BusinessException("部门文件中部门编码和部门名称不能为空!");
+      }
+    } else if (TargetCategoryEnums.PROJECT.getCode().equalsIgnoreCase(dto.getTargetCategory())) {
+      if (ObjectUtil.isEmpty(dto.getProjectCode()) || ObjectUtil.isEmpty(dto.getProjectName())) {
+        throw new BusinessException("项目文件中项目编码和项目名称不能为空!");
+      }
+    }
     this.createBucket(dto.getSourceService());
     InputStream inputStream = dto.getFile().getInputStream();
     minioClient.putObject(
@@ -81,6 +90,7 @@ public class UploadFileLogServiceImpl extends ServiceImpl<UploadFileLogMapper, U
             .object(objectName)
             .stream(inputStream, dto.getFile().getSize(), -1)
             .build());
+    inputStream.close();
   }
 
   @Override
@@ -245,13 +255,13 @@ public class UploadFileLogServiceImpl extends ServiceImpl<UploadFileLogMapper, U
                 .build());
     stopWatch.stop();
     stopWatch.start("下载文件");
-    try {
-      InputStream object =
-          minioClient.getObject(
-              GetObjectArgs.builder()
-                  .bucket(uploadFileLog.getSourceService())
-                  .object(objectName)
-                  .build());
+    try (InputStream object =
+            minioClient.getObject(
+                GetObjectArgs.builder()
+                    .bucket(uploadFileLog.getSourceService())
+                    .object(objectName)
+                    .build());
+        ServletOutputStream outputStream = response.getOutputStream()) {
       if (Boolean.FALSE.equals(preview)) {
         initResponse(
             uploadFileLog.getCustomName(),
@@ -265,9 +275,8 @@ public class UploadFileLogServiceImpl extends ServiceImpl<UploadFileLogMapper, U
             ContentDispositionEnums.INLINE,
             response);
       }
-      ServletOutputStream outputStream = response.getOutputStream();
       IoUtil.copy(object, response.getOutputStream());
-      outputStream.close();
+      outputStream.flush();
       stopWatch.stop();
       log.info(
           "文件下载成功, 文件名称为:{}, 文件大小为:{}, 执行过程为:{}",
@@ -289,12 +298,12 @@ public class UploadFileLogServiceImpl extends ServiceImpl<UploadFileLogMapper, U
       throw new BusinessException("文件ID不存在");
     }
     stopWatch.stop();
+    stopWatch.start("整理ZIP包");
+    // 被压缩文件InputStream
+    InputStream[] inputStreams = new InputStream[uploadFileLogList.size()];
+    // 被压缩文件名称
+    String[] fileNames = new String[uploadFileLogList.size()];
     try {
-      stopWatch.start("整理ZIP包");
-      // 被压缩文件InputStream
-      InputStream[] inputStreams = new InputStream[uploadFileLogList.size()];
-      // 被压缩文件名称
-      String[] fileNames = new String[uploadFileLogList.size()];
       for (int i = 0; i < uploadFileLogList.size(); i++) {
         UploadFileLog item = uploadFileLogList.get(i);
         String objectName =
