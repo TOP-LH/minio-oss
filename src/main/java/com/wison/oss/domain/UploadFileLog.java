@@ -71,6 +71,6 @@ public class UploadFileLog implements Serializable {
   /** 创建时间 */
   private Date createTime;
   /** 逻辑删除 */
-  @TableLogic(value = "true", delval = "false")
+  @TableLogic(value = "false", delval = "true")
   private Boolean deleteFlag;
 }
