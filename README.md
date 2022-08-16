@@ -46,3 +46,6 @@ PS: 本项目目的是为提供一个实现逻辑, 请根据实际情况自行�
 
 ### [帮助文档](https://github.com/TOP-LH/minio-oss/wiki/%E6%8E%A5%E5%8F%A3%E5%B8%AE%E5%8A%A9%E6%96%87%E6%A1%A3)
 
+
+## 点赞趋势
+[![Stargazers over time](https://starchart.cc/TOP-LH/minio-oss.svg)](https://starchart.cc/TOP-LH/minio-oss)
