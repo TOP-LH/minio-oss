@@ -14,12 +14,6 @@ spring:
   # 指定执行环境
   profiles:
     active: @profiles.activation@
-  cloud:
-    nacos:
-      discovery:
-        metadata:
-          # 添加元数据,防止springboot admin监听过多无用服务
-          springboot-admin: true
   # 全局时间格式化
   jackson:
     date-format: yyyy-MM-dd

@@ -56,8 +56,8 @@ public class OssController {
   @GetMapping("download/file")
   @ApiOperation("下载文件")
   public void downloadFile(
-      @ApiParam("文件ID") @NotEmpty(message = "文件ID不可为空") String id,
-      @ApiParam("是否预览") Boolean preview,
+      @ApiParam(value = "文件ID", required = true) @NotEmpty(message = "文件ID不可为空") String id,
+      @ApiParam(value = "是否预览", required = true) Boolean preview,
       HttpServletResponse response) {
     if (ObjectUtil.isEmpty(preview)) {
       preview = Boolean.FALSE;
@@ -68,7 +68,7 @@ public class OssController {
   @GetMapping("download/zip/file")
   @ApiOperation("多文件打包下载")
   public void uploadTarFile(
-      @ApiParam("文件ID") @NotEmpty(message = "文件ID不可为空") String ids,
+      @ApiParam(value = "文件ID", required = true) @NotEmpty(message = "文件ID不可为空") String ids,
       @ApiParam("zip包名称(不带文件后缀)") String zipName,
       HttpServletResponse response) {
     List<String> idList = Arrays.asList(ids.split(","));
@@ -80,7 +80,8 @@ public class OssController {
 
   @DeleteMapping("delete/file")
   @ApiOperation("根据文件唯一ID删除")
-  public R deleteById(@ApiParam("文件ID") @NotEmpty(message = "文件ID不可为空") String id) {
+  public R deleteById(
+      @ApiParam(value = "文件ID", required = true) @NotEmpty(message = "文件ID不可为空") String id) {
     uploadFileLogService.deleteById(id);
     return R.success("删除成功!");
   }
