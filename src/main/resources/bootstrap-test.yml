@@ -3,7 +3,7 @@ spring:
     nacos:
       discovery:
         # 注册中心地址
-        server-addr: 10.99.10.123:8848
+        server-addr: XXX
         # 命名空间
         namespace: 79883141-087a-4f4f-9a13-f2c42bb73e14
       config:
@@ -11,19 +11,19 @@ spring:
   datasource:
     type: com.alibaba.druid.pool.DruidDataSource
     driverClassName: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://10.99.10.123:3306/wison_oss?useUnicode=true&characterEncoding=utf8&useSSL=false&noAccessToProcedureBodies=true&serverTimezone=Asia/Shanghai
-    username: iipuser
-    password: wison12#$
+    url: jdbc:mysql://XXX:3306/XXX?useUnicode=true&characterEncoding=utf8&useSSL=false&noAccessToProcedureBodies=true&serverTimezone=Asia/Shanghai
+    username: XXX
+    password: XXX
 
 # 测试环境打印SQL脚本
 logging:
   level:
-    com.wison.oss: debug
+    com.minio.oss: debug
 mybatis-plus:
   configuration:
     log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
 
 minio:
-  url: http://10.88.26.12:9000
-  access-key: wison
-  secret-key: wison@minio
+  url: XXX
+  access-key: XXX
+  secret-key: XXX

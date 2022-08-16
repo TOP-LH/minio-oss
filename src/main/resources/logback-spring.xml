@@ -52,15 +52,6 @@
         <appender-ref ref="file_info"/>
     </appender>
 
-    <!--plumelog 日志管理平台-->
-    <appender name="plumelog" class="com.plumelog.logback.appender.RedisAppender">
-        <appName>${applicationName}</appName>
-        <redisHost>10.99.10.60</redisHost>
-        <redisAuth>wison@redis</redisAuth>
-        <redisDb>0</redisDb>
-        <env>${profilesActive}</env>
-    </appender>
-
     <!-- Spring日志级别控制  -->
     <logger name="org.springframework" level="warn"/>
 
@@ -71,7 +62,6 @@
 
     <!--系统操作日志-->
     <root level="info">
-        <appender-ref ref="plumelog"/>
         <appender-ref ref="async_info"/>
     </root>
 </configuration>

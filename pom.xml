@@ -2,11 +2,11 @@
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.wison</groupId>
-    <artifactId>wison-oss</artifactId>
+    <groupId>com.minio</groupId>
+    <artifactId>minio-oss</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>wison-oss</name>
-    <description>wison-oss</description>
+    <name>minio-oss</name>
+    <description>minio-oss</description>
 
     <properties>
         <java.version>1.8</java.version>
@@ -105,21 +105,6 @@
             <scope>runtime</scope>
         </dependency>
         <dependency>
-            <groupId>com.wison</groupId>
-            <artifactId>wison-base</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>cn.hutool</groupId>
-                    <artifactId>hutool-all</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.baidu.aip</groupId>
-                    <artifactId>java-sdk</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
             <groupId>cn.hutool</groupId>
             <artifactId>hutool-core</artifactId>
             <version>5.7.22</version>
@@ -129,6 +114,17 @@
             <artifactId>hutool-http</artifactId>
             <version>5.7.22</version>
         </dependency>
+        <dependency>
+            <groupId>com.github.xiaoymin</groupId>
+            <artifactId>knife4j-spring-boot-starter</artifactId>
+            <version>2.0.9</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.pagehelper</groupId>
+            <artifactId>pagehelper-spring-boot-starter</artifactId>
+            <version>1.4.3</version>
+        </dependency>
+
     </dependencies>
 
     <dependencyManagement>
@@ -195,7 +191,7 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>2.3.7.RELEASE</version>
                 <configuration>
-                    <mainClass>com.wison.oss.WisonOssApplication</mainClass>
+                    <mainClass>com.minio.oss.MinioOssApplication</mainClass>
                 </configuration>
                 <executions>
                     <execution>

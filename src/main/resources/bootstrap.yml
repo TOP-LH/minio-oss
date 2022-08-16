@@ -10,7 +10,7 @@ server:
 spring:
   # 服务名
   application:
-    name: wison-oss
+    name: minio-oss
   # 指定执行环境
   profiles:
     active: @profiles.activation@
